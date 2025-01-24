@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_style %}
+<style>
+  .top-buffer { margin-top:32px; }
+  .rating {
+    float:left;
+    border:none;
+  }
+  .rating:not(:checked) > input {
+      position:absolute;
+      top:-9999px;
+      clip:rect(0, 0, 0, 0);
+  }
+  .rating:not(:checked) > label {
+      float:right;
+      width:1em;
+      padding:0 .1em;
+      overflow:hidden;
+      white-space:nowrap;
+      cursor:pointer;
+      font-size:200%;
+      line-height:1.2;
+      color:#ddd;
+  }
+  .rating:not(:checked) > label:before {
+      content:'★';
+  }
+  .rating > input:checked ~ label {
+      color: gold;
+  }
+  .rating:not(:checked) > label:hover, .rating:not(:checked) > label:hover ~ label {
+      color: gold;
+  }
+
+  .rating > input:checked + label:hover, .rating > input:checked + label:hover ~ label, .rating > input:checked ~ label:hover, .rating > input:checked ~ label:hover ~ label, .rating > label:hover ~ input:checked ~ label {
+      color: #ea0;
+  }
+  .rating > label:active {
+      position:relative;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+<form method="post" action="{% url 'qbanks:rate' %}">
+  {% csrf_token %}
+  <fieldset class="rating">
+    <input type="radio" id="star5" name="rating" value="5" checked="checked">
+    <label for="star5"></label>
+    <input type="radio" id="star4" name="rating" value="4" checked="checked">
+    <label for="star4"></label>
+    <input type="radio" id="star3" name="rating" value="3" checked="checked">
+    <label for="star3"></label>
+    <input type="radio" id="star2" name="rating" value="2" checked="checked">
+    <label for="star2"></label>
+    <input type="radio" id="star1" name="rating" value="1" checked="">
+    <label for="star1"></label>
+  </fieldset>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
