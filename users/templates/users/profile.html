@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% load static %}
+{% load users_filters %}
+
+{% block extra_style %}
+<style>
+  .top-buffer { margin-top:32px; }
+
+  .rating {
+    float: left;
+    border: none;
+  }
+  
+  .rating > label {
+    float: right;
+    width: 1em;
+    padding: 0 .1em;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 120%;
+    line-height: 1.2;
+    color: #ddd; /* Default color for empty stars */
+  }
+  
+  /* Ensure the stars are always displayed */
+  .rating > label:before {
+    content: '★';
+  }
+  
+  /* Change the color of filled stars */
+  .rating > label.filled {
+    color: gold;
+  }
+
+
+  .qbank-card-banner {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+  }
+
+  .qbank-favorite {
+    font-size: 120%;
+    color: red;
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+<section class="w-100 px-4 py-5" style="border-radius: .5rem .5rem 0 0;">
+  <div class="row d-flex justify-content-center">
+    <div class="col col-md-9 col-lg-7 col-xl-6">
+      <div class="card" style="border-radius: 15px;">
+        <div class="card-body p-4">
+          <div class="d-flex">
+            <div class="flex-shrink-0">
+              <img src="{{ selected_user.account.pfp.url }}" alt="pfp" width="180" height="180" class="rounded-circle">
+            </div>
+            <div class="flex-grow-1 ms-3 d-flex flex-column justify-content-center">
+              <h5 class="mb-3 text-break">{{ selected_user.username }}</h5>
+              <div class="d-flex justify-content-start rounded-3 p-2 mb-3 bg-body-tertiary">
+                <div>
+                  <p class="small text-muted mb-1">Qbanks</p>
+                  <p class="mb-0">{{ selected_user.qbanks_owned.count }}</p>
+                </div>
+                <div class="px-3">
+                  <p class="small text-muted mb-1">Followers</p>
+                  <p class="mb-0">{{ selected_user.followers.count }}</p>
+                </div>
+                <div>
+                  <p class="small text-muted mb-1">Following</p>
+                  <p class="mb-0">{{ selected_user.following.count }}</p>
+                </div>
+              </div>
+              <div class="d-flex pt-1">
+                {% if selected_user == request.user %}
+                  <a href="{% url 'users:edit_profile' %}?next={{ request.get_full_path|urlencode }}" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-primary me-1 flex-grow-1">Edit profile</a>
+                {% elif user_follow_statuses|get_item:selected_user %}
+                  <form action="{% url 'users:unfollow' %}" method="post" class="flex-grow-1 d-flex">
+                    {% csrf_token %}
+                    <input type="hidden" name="user" value="{{ selected_user.username }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-primary me-1 flex-grow-1">Unfollow</button>
+                  </form>
+                {% else %}
+                  <form action="{% url 'users:follow' %}" method="post" class="flex-grow-1 d-flex">
+                    {% csrf_token %}
+                    <input type="hidden" name="user" value="{{ selected_user.username }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary me-1 flex-grow-1">Follow</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="album py-5 bg-body-tertiary">
+  <div class="container">
+    <header class="d-flex justify-content-center mb-5">
+      <ul class="nav nav-pills">
+        <li class="nav-item"><a href="{{ request.path }}?user={{ selected_user.username }}&section=qbanks_section" class="nav-link {% if section == 'qbanks_section' %}active{% endif %}" aria-current="page">Qbanks</a></li>
+        <li class="nav-item"><a href="{{ request.path }}?user={{ selected_user.username }}&section=followers_section" class="nav-link {% if section == 'followers_section' %}active{% endif %}">Followers</a></li>
+        <li class="nav-item"><a href="{{ request.path }}?user={{ selected_user.username }}&section=following_section" class="nav-link {% if section == 'following_section' %}active{% endif %}">Following</a></li>
+      </ul>
+    </header>
+
+    {% if section == 'qbanks_section' %}
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+      
+        {% if qbanks %}
+          {% for qbank in qbanks %}
+            <div class="col d-flex align-items-stretch">
+              <div class="card shadow-sm">
+                <a href="{% url 'qbanks:qbank' %}?qbank_id={{ qbank.qbank_id }}">
+                  <img src="{{ qbank.banner.url }}" class="card-img-top qbank-card-banner" alt="Banner">
+                </a>
+                <div class="card-body d-flex flex-column">
+                  <div class="d-flex align-items-center mb-2">
+                    <a href="{% url 'users:profile' %}?user={{ qbank.owner.username }}" class="d-block link-body-emphasis text-decoration-none">
+                      <img src="{{ qbank.owner.account.pfp.url }}" alt="pfp" width="32" height="32" class="rounded-circle">
+                    </a>
+                    <a href="{% url 'users:profile' %}?user={{ qbank.owner.username }}" style="text-decoration:none; color: inherit;">
+                      <small class="text-body-secondary ms-2 text-break">{{ qbank.owner|truncatechars:36 }}</small>
+                    </a>
+                  </div>
+                  
+                  <h5 class="pb-2"><b>{{ qbank.name }}</b></h2>
+                  <p class="card-text">{{ qbank.description|truncatechars:127 }}</p>
+                  <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <div>
+                      <label class="qbank-favorite">♥ <label>
+                      <small class="text-body-secondary">({{ qbank.favorites_count }})</small>
+                    </div>
+                    <div class="rating">
+                      {% for i in ratings_threshold %}
+                        {% if qbank.avg_rating >= i %}
+                          <label class="filled"></label>
+                        {% else %}
+                          <label></label>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-body-secondary ms-3">No qbanks.</p>
+        {% endif %}
+
+      </div>
+    {% endif %}
+
+    {% if section == 'followers_section' %}
+      {% if selected_user.followers.count > 0 %}
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <hr>
+            <ul class="list-group list-group-flush">
+              {% for follow in selected_user.followers.all %}
+                <li class="list-group-item d-flex align-items-center" style="background-color: transparent;">
+                  <a href="{% url 'users:profile' %}?user={{ follow.follower.username }}" class="d-block link-body-emphasis text-decoration-none">
+                    <img src="{{ follow.follower.account.pfp.url }}" alt="pfp" width="50" height="50" class="rounded-circle">
+                  </a>
+                  <a href="{% url 'users:profile' %}?user={{ follow.follower.username }}" class="d-block link-body-emphasis text-decoration-none">
+                    <h6 class="ms-3 text-break">{{ follow.follower.username|truncatechars:36 }}</h6>
+                  </a>
+                  {% if follow.follower == request.user %}
+                  {% elif user_follow_statuses|get_item:follow.follower %}
+                    <form action="{% url 'users:unfollow' %}" method="post" class="ms-auto">
+                      {% csrf_token %}
+                      <input type="hidden" name="user" value="{{ follow.follower.username }}">
+                      <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-primary me-1">Unfollow</button>
+                    </form>
+                  {% else %}
+                    <form action="{% url 'users:follow' %}" method="post" class="ms-auto">
+                      {% csrf_token %}
+                      <input type="hidden" name="user" value="{{ follow.follower.username }}">
+                      <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary me-1">Follow</button>
+                    </form>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+            <hr>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-body-secondary ms-3">No followers.</p>
+      {% endif %}
+    {% endif %}
+
+    {% if section == 'following_section' %}
+      {% if selected_user.following.count > 0 %}
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <hr>
+            <ul class="list-group list-group-flush">
+              {% for follow in selected_user.following.all %}
+                <li class="list-group-item d-flex align-items-center" style="background-color: transparent;">
+                  <a href="{% url 'users:profile' %}?user={{ follow.following.username }}" class="d-block link-body-emphasis text-decoration-none">
+                    <img src="{{ follow.following.account.pfp.url }}" alt="pfp" width="50" height="50" class="rounded-circle">
+                  </a>
+                  <a href="{% url 'users:profile' %}?user={{ follow.following.username }}" class="d-block link-body-emphasis text-decoration-none">
+                    <h6 class="ms-3 text-break">{{ follow.following.username|truncatechars:36 }}</h6>
+                  </a>
+                  {% if follow.following == request.user %}
+                  {% elif user_follow_statuses|get_item:follow.following %}
+                    <form action="{% url 'users:unfollow' %}" method="post" class="ms-auto">
+                      {% csrf_token %}
+                      <input type="hidden" name="user" value="{{ follow.following.username }}">
+                      <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-primary me-1">Unfollow</button>
+                    </form>
+                  {% else %}
+                    <form action="{% url 'users:follow' %}" method="post" class="ms-auto">
+                      {% csrf_token %}
+                      <input type="hidden" name="user" value="{{ follow.following.username }}">
+                      <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary me-1">Follow</button>
+                    </form>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+            <hr>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-body-secondary ms-3">No following.</p>
+      {% endif %}
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}
