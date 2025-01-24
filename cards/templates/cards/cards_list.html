@@ -1,0 +1,101 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_style %}
+<style>
+  .top-buffer { margin-top:32px; }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="album py-5 bg-body-tertiary">
+  <div class="container">
+
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <form action="{% url 'cards:cards_list' %}" method="get">
+          <div class="input-group justify-content-center mb-3">
+            {{ form | crispy }}
+            <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+            <div class="d-flex align-items-center">
+              <button class="btn btn-primary mt-3" type="submit">Search</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      {% if qbank.owner == request.user %}
+        <div class="col-md-8">
+          <a href="{% url 'cards:create_card' %}?qbank_id={{ qbank.qbank_id }}&next={{ request.get_full_path|urlencode }}" class="btn btn-primary w-100">Add</a>
+        </div>
+      {% endif %}
+      <div class="col-md-2">
+        <a href="{% url 'qbanks:qbank' %}?qbank_id={{ qbank.qbank_id }}" class="btn btn-secondary w-100">Go back</a>
+      </div>
+    </div>
+
+    {% if cards %}
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <hr>
+          <ul class="list-group list-group-flush">
+            {% for card in cards %}
+              <li class="list-group-item d-flex align-items-center" style="background-color: transparent;">
+                <a href="{% url 'cards:card' %}?mode=selection&card_id={{ card.card_id }}&next={{ request.get_full_path|urlencode }}" class="d-block link-body-emphasis text-decoration-none">
+                  <p class="text-break">{{ card.question|truncatechars:80 }}</p>
+                </a>
+                {% if qbank.owner == request.user %}
+                <div class="ms-auto">
+                  <a href="{% url 'cards:edit_card' %}?card_id={{ card.card_id }}&next={{ request.get_full_path|urlencode }}" class="btn btn-outline-secondary">Edit</a>
+                  <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#delete_modal">Delete</button>
+                  <div class="modal" id="delete_modal">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Delete card</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+
+                          <div class="row justify-content-center">
+                            <div class="col-auto text-center">
+                              <form method="post" action="{% url 'cards:delete_card' %}">
+                                <div class="alert alert-danger mb-3" role="alert">
+                                  Warning: Are you sure you want to delete this card? This action cannot be undone.
+                                </div>
+                                {% csrf_token %}
+                                <input type="hidden" name="card_id" value="{{ card.card_id }}">
+                                <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                                <div class="mb-3">
+                                  <button type="submit" class="btn btn-danger">Delete</button>
+                                  <button type="button" class="btn btn-secondary ms-3" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div> 
+                </div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-body-secondary ms-3 mt-3">No cards.</p>
+    {% endif %}
+
+  </div>
+</div>
+
+
+
+{% endblock %}

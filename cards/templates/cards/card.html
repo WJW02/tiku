@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_style %}
+<style>
+  .top-buffer { margin-top:32px; }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="album py-5 bg-body-tertiary">
+  <div class="container">
+    {% if card %}
+      <h2 class="text-break">{{ card.question }}</h2>
+      <hr>
+    {% endif %}
+    <div class="row justify-content-center">
+      {% if card %}
+        <div class="col-md-10">
+          <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#hiddenContent" aria-expanded="false" aria-controls="hiddenContent">
+            Show answer
+          </button>
+        </div>
+      {% endif %}
+      <div class="col-md-2">
+        <a href="{{ next }}" class="btn btn-secondary w-100">Go back</a>
+      </div>
+    </div>
+
+    <!-- Button to trigger the collapse (show/hide) -->
+
+    <!-- Hidden content -->
+    {% if card %}
+      <div class="collapse" id="hiddenContent">
+        <div class="row justify-content-center">
+          <div class="col-md-12 mt-5">
+            {% if card.image %}
+              <img src="{{ card.image.url }}" class="d-block mx-lg-auto img-fluid rounded mb-3" alt="image" width="700" height="500" loading="lazy">
+            {% endif %}
+            <h4 class="text-break">{{ card.answer }}</h4>
+
+            <div class="d-flex justify-content-center mt-5">
+              <ul class="nav">
+                <li>
+                  <form action="{% url 'cards:card' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="{{ mode }}">
+                    {% if mode == 'random'%}
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% elif mode == 'spaced_repetition'%}
+                      <input type="hidden" name="card_id" value="{{ card.card_id }}">
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% endif %}
+                    <input type="hidden" name="difficulty" value="again">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <button type="submit" class="btn btn-secondary btn-lg px-4 me-md-2">Again</button>
+                  </form>
+                </li>
+                <li>
+                  <form action="{% url 'cards:card' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="{{ mode }}">
+                    {% if mode == 'random'%}
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% elif mode == 'spaced_repetition'%}
+                      <input type="hidden" name="card_id" value="{{ card.card_id }}">
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% endif %}
+                    <input type="hidden" name="difficulty" value="hard">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <button type="submit" class="btn btn-secondary btn-lg px-4 me-md-2">Hard</button>
+                  </form>
+                </li>
+                <li>
+                  <form action="{% url 'cards:card' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="{{ mode }}">
+                    {% if mode == 'random'%}
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% elif mode == 'spaced_repetition'%}
+                      <input type="hidden" name="card_id" value="{{ card.card_id }}">
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% endif %}
+                    <input type="hidden" name="difficulty" value="good">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <button type="submit" class="btn btn-secondary btn-lg px-4 me-md-2">Good</button>
+                  </form>
+                </li>
+                <li>
+                  <form action="{% url 'cards:card' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="{{ mode }}">
+                    {% if mode == 'random'%}
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% elif mode == 'spaced_repetition'%}
+                      <input type="hidden" name="card_id" value="{{ card.card_id }}">
+                      <input type="hidden" name="qbank_id" value="{{ qbank.qbank_id }}">
+                    {% endif %}
+                    <input type="hidden" name="difficulty" value="easy">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <button type="submit" class="btn btn-secondary btn-lg px-4 me-md-2">Easy</button>
+                  </form>
+                </li>
+              </ul>
+            <div>
+            
+
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-body-secondary ms-3 mt-3">No cards.</p>
+    {% endif %}
+
+  </div>
+
+</div>
+
+{% endblock %}
