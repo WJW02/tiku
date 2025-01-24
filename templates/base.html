@@ -1,0 +1,71 @@
+{% extends "boilerplate.html" %}
+{% load static %}
+
+{% block style %}
+<link href="{% static 'qbanks/css/headers.css' %}" rel="stylesheet">
+<!-- Custom styles for this template -->
+{% block extra_style %}
+{% endblock %}
+{% endblock %} 
+
+{% block body %}
+<main>
+  <div class="container">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div class="col-md-3 mb-2 mb-md-0">
+        <a href="{% url 'qbanks:home' %}" class="d-inline-flex link-body-emphasis text-decoration-none">
+          <img src="{% static 'images/logo.png' %}" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="40" height="32" loading="lazy">
+        </a>
+      </div>
+      
+      <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+        {% url 'qbanks:home' as home_url %}
+        <li><a href="{% url 'qbanks:home' %}" class="nav-link px-2 {% if request.path == home_url or request.path == '/' %}link-secondary{% endif %}">Home</a></li>
+        {% url 'qbanks:explore' as explore_url %}
+        <li><a href="{% url 'qbanks:explore' %}" class="nav-link px-2 {% if request.path == explore_url %}link-secondary{% endif %}">Explore</a></li>
+        {% url 'qbanks:vault' as vault_url %}
+        <li><a href="{% url 'qbanks:vault' %}?filter=0&sort=0" class="nav-link px-2 {% if request.path == vault_url %}link-secondary{% endif %}">Vault</a></li>
+      </ul>
+
+      {% if user.is_authenticated %}
+        <div class="dropdown col-md-3 text-end">
+          <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{{ user.account.pfp.url }}" alt="pfp" width="32" height="32" class="rounded-circle">
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end text-small">
+            <li><a class="dropdown-item" href="{% url 'qbanks:create_qbank' %}?next={{ request.get_full_path|urlencode }}">New qbank...</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:profile' %}?user={{ user.username }}">Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:edit_profile' %}?next={{ request.get_full_path|urlencode }}">Edit profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:delete_user' %}?next={{ request.get_full_path|urlencode }}" style="color: red;">Delete account</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form action="{% url 'users:logout' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path|urlencode }}">
+                <button type="submit" class="dropdown-item">Log out</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      {% else %}
+        <div class="col-md-3 text-end">
+          <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-outline-primary me-2">Login</a>
+          <a href="{% url 'users:signup' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-primary">Sign-up</a>
+        </div>
+      {% endif %}
+    </header>
+  </div>
+
+  {% block main %}
+  {% endblock %} 
+</main>
+
+<footer class="text-body-secondary py-5">
+  <div class="container">
+    <p class="float-end mb-1">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="mb-1">&copy; 2024-2025 Tiku. All rights reserved.</p>
+  </div>
+</footer>
+{% endblock %}
