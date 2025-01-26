@@ -3,14 +3,19 @@ Tiku is a web app built with **Django** and **Bootstrap**, designed to host ques
 ## About the project
 Home page:
 ![home](./images/home.png)
+  
 Explore page:
 ![explore](./images/explore.png)
+  
 Vault page:
 ![vault](./images/vault.png)
+  
 Profile page:
 ![profile](./images/profile.png)
+  
 Qbank page:
 ![qbank](./images/qbank.png)
+  
 Card page:
 ![card](./images/card.png)
 ### Spaced repetition algorithm
@@ -61,7 +66,7 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 ```
 
-6. Create admin
+6. Create admin:
 ```
 python3 manage.py createsuperuser
 ```
